@@ -1,5 +1,8 @@
-# This workflow will build a Java project with Maven
-# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+# Quickstart for GitHub Actions
+# https://docs.github.com/en/actions/quickstart
+#
+# For more information about the workflow to build a Java project with Maven, see:
+# https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
 name: Java CI with Maven
 
@@ -8,21 +11,55 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  # https://docs.github.com/en/actions/using-workflows/manually-running-a-workflow
+  workflow_dispatch:
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        os: [ ubuntu-latest ]
-        java-version: [ 11.0.3, 11 ]
+    timeout-minutes: 20
+    name: CI with multiply java versions
+
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK ${{ matrix.java-version }}
-      uses: actions/setup-java@v2
-      with:
-        java-version: ${{ matrix.java-version }}
-        distribution: 'zulu'
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      - uses: actions/checkout@v4
+      ##################################################
+      # Set up multiply java versions
+      ##################################################
+      - name: Set up Java 8
+        uses: actions/setup-java@v4
+        with:
+          java-version: 8
+          distribution: zulu
+          # only first java set up need enable cache
+          cache: maven
+      - name: Set up Java 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: 11
+          distribution: zulu
+      # CAUTION:
+      #   do NOT move specified old version `11.0.3` before version `11`,
+      #   or the version `11.0.3` will not be installed!
+      #   because the old version 11.0.3 satisfies the version 11.
+      - name: Set up Java 11.0.3
+        uses: actions/setup-java@v4
+        with:
+          java-version: 11.0.3
+          distribution: zulu
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: zulu
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: zulu
+
+      ##################################################
+      # CI/Build
+      ##################################################
+      - name: Run integration test with multiply java versions
+        run: scripts/integration-test.sh
